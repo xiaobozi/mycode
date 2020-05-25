@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app">
+      <input type="button" value="toggle" @click= "flag =!flag">
+
+      <h3 v-if = "flag">这是v-if</h3>
+      <h3 v-show = 'flag'>这是v-show</h3>
+    </div>
+    <script src="../vue-2.4.0/dist/vue.js"></script>
+    <script>
+       
+        let vm = new Vue({
+                el: "#app",
+                data: {
+                    flag : 0
+                },
+                methods:{
+                    add(){
+                        this.list.push({id : this.id , name : this.name})
+                    }
+                }
+            })
+    </script>
+</body>
+</html>
