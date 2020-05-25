@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        #app {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .othrow {
+            width: 50px;
+            height: 50px;
+            background-color: #00ffff;
+            border: 0.5px solid white;
+        }
+
+        .row {
+            display: flex;
+        }
+
+        .b::after {
+            content: '';
+            display: block;
+            position: absolute;
+            margin: 5px;
+            width: 40px;
+            height: 40px;
+            background-color: black;
+            border-radius: 50%;
+        }
+
+        .w::after {
+            content: '';
+            display: block;
+            position: absolute;
+            margin: 5px;
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border-radius: 50%;
+        }
+        .cantainer {
+            margin: 100px;
+        }
+        .tip {
+            margin: auto;
+            width: 600px;
+            height: 100px;
+            border: 1px solid gray;
+            display: flex;
+            justify-content: space-around;
+        }
+        .boradchild {
+            font-size: 30px;
+        }
+        .win {
+            font-size: 40px;
+            color: red;
+        }
+        .reset {
+            padding: 17px 36px;
+            border: none;
+            outline: none;
+        }
+        .color {
+            border: none;
+            width: 40px;
+        }
+        input[type=number]{
+            width: 35px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div v-if="flag" class="cantainer win">恭喜{{white > black ? "白方" : "黑方"}}获胜!</div>
+        <div class="cantainer" v-else>
+            <div class="row" v-for="(v,i) in borad">
+                <div :class="['othrow',{b : d == 2},{w : d == 1}]" 
+                :style="{'background-color':color}"
+                v-for="(d,idx) in v" 
+                @click="fn(d,i,idx)"></div>
+            </div>
+        </div>
+        <div class="tip">
+            <div class="boradchild">
+                <p>白子 : {{white}}</p>
+                <p>黑子 : {{black}}</p>
+                <!-- <p>余子 : {{black}}</p> -->
+                <!-- <p>领先 : {{black}}</p> -->
+            </div>
+            <div>
+                <input type="button" value="重新开始" @click="reset" class="reset">
+            </div>
+            <div class="help">
+                <div>
+                    <input type="color" class="color" v-model="color"> 选择棋盘颜色
+                </div>
+                <div>
+                    <input type="number" min="4" v-model="size"> 选择棋盘大小
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/vue/vuejs/vue.js"></script>
+    <script>
+        //0表空白 1表白子 2表黑子
+        let borad = [
+            [0, 0, 0, 0, 0, 0, 0, 0, ],
+            [0, 0, 0, 0, 0, 0, 0, 0, ],
+            [0, 0, 0, 0, 0, 0, 0, 0, ],
+            [0, 0, 0, 0, 0, 0, 0, 0, ],
+            [0, 0, 0, 0, 0, 0, 0, 0, ],
+            [0, 0, 0, 0, 0, 0, 0, 0, ],
+            [0, 0, 0, 0, 0, 0, 0, 0, ],
+            [0, 0, 0, 0, 0, 0, 0, 0, ],
+        ]
+        let vm = new Vue({
+            el: '#app',
+            data: {
+                borad: borad,
+                disc: 0 ,//白子先下
+                flag : false,
+                color : '#00ffff',
+                size : 8
+            },
+            methods: {
+                fn(d, y1, x1) {
+                    if (d) return //当点击是已经有子的话就直接跳出
+                    let num = [1, 2][this.disc++ % 2] //表示棋子
+                        borad = this.borad,
+                        canMove = false, //表示是否可以吃子
+                        hasOpposite = false, //表示是不是有其他色子
+                        x = x1, //x点
+                        y = y1, //y点
+                        oy = y, //把x,y 位置保存起来
+                        ox = x
+                    //重置
+                    function reset() {
+                        canMove = false
+                        hasOpposite = false
+                        x = ox
+                        y = oy
+                    }
+                    //判断
+                    function swi() {
+                        if (borad[y][x] == 3 - num) {
+                            hasOpposite = true
+                        }
+                        if (borad[y][x] === num) {
+                            if (hasOpposite) return canMove = true
+                        }
+                        if (borad[y][x] === 0) {
+                            return true
+                        }
+                    }
+
+                    while (--x >= 0) {
+                        if (swi()) break
+                    }
+                    if (canMove) {
+                        while (x != ox) {
+                            borad[y][x++] = num
+                        }
+                    }
+
+                    reset()
+                    while (++x <= borad[y].length - 1) {
+                        if (swi()) break
+                    }
+                    if (canMove) {
+                        while (ox != x) {
+                            borad[y][x--] = num
+                        }
+                    }
+
+                    reset()
+                    while (++y <= borad.length - 1) {
+                        if (swi()) break
+                    }
+                    if (canMove) {
+                        while (y != oy) {
+                            borad[--y][ox] = num
+                        }
+                    }
+
+                    reset()
+                    while (--y >= 0) {
+                        if (swi()) break
+                    }
+                    if (canMove) {
+                        while (y != oy) {
+                            borad[++y][ox] = num
+                        }
+                    }
+
+                    reset()
+                    while (--x >= 0 && --y >= 0) {
+                        if (swi()) break
+                    }
+                    if (canMove) {
+                        while (y != oy && x != ox) {
+                            borad[++y][++x] = num
+                        }
+                    }
+
+                    reset()
+                    while (++x <= borad[oy].length - 1 && ++y <= borad.length - 1) {
+                        if (swi()) break
+                    }
+                    if (canMove) {
+                        while (y != oy && x != ox) {
+                            borad[--y][--x] = num
+                        }
+                    }
+
+                    reset()
+                    while (--x >= 0 && ++y <= borad.length - 1) {
+                        if (swi()) break
+                    }
+                    if (canMove) {
+                        while (y != oy && x != ox) {
+                            borad[--y][++x] = num
+                        }
+                    }
+
+                    reset()
+                    while (++x <= borad[oy].length - 1 && --y >= 0) {
+                        if (swi()) break
+                    }
+                    if (canMove) {
+                        while (y != oy && x != ox) {
+                            borad[++y][--x] = num
+                        }
+                    }
+
+                    //默认会下一个子
+                    borad[oy][ox] = num
+                    //重新渲染棋盘
+                    this.borad = [...borad]
+                },
+                reset(){
+                    this.borad = JSON.parse(JSON.stringify(this.oldborad))
+                }
+            },
+            computed : {
+                white(){
+                    return this.borad.flat(2).filter(e => e === 1).length
+                },
+                black(){
+                    return this.borad.flat(2).filter(e => e === 2).length
+                }
+            },
+            watch : {
+                borad(n){
+                    this.flag = !n.flat(2).includes(0)
+                    if(this.flag){
+                        setTimeout(() => {
+                            let result = confirm("是否在来一局")
+                            if(result)this.reset()
+                        },0);
+                    }
+                }
+                ,size(size){
+                    let newborad = []
+                    for(let i = 0 ; i < size ; i++){
+                    let arr = []
+                    for(let i = 0 ; i < size ; i++){
+                        arr.push(0)
+                    }
+                        newborad.push(arr)
+                    }
+                    this.borad = newborad
+                    this.oldborad = JSON.parse(JSON.stringify(newborad))
+                }
+            },
+            mounted(){
+                this.oldborad = JSON.parse(JSON.stringify(borad))
+            }
+        })
+    </script>
+</body>
+
+</html>
